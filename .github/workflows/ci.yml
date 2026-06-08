@@ -17,7 +17,6 @@ concurrency:
 
 env:
   NODE_VERSION: "20"
-  PNPM_VERSION: "9"
   DATABASE_URL: "postgresql://futboss:futboss123@localhost:5432/futboss_test?schema=public"
   REDIS_URL: "redis://localhost:6379"
   NEXTAUTH_SECRET: "ci-secret-that-is-at-least-32-characters-long-for-testing"
@@ -32,25 +31,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "pnpm"
+          cache: "npm"
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: Generate Prisma client
-        run: pnpm db:generate
+        run: npm run db:generate
 
       - name: Run ESLint
-        run: pnpm lint
+        run: npm run lint
 
   typecheck:
     name: Type Check
@@ -59,25 +53,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "pnpm"
+          cache: "npm"
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: Generate Prisma client
-        run: pnpm db:generate
+        run: npm run db:generate
 
       - name: Run TypeScript type check
-        run: pnpm typecheck
+        run: npm run typecheck
 
   test:
     name: Test
@@ -110,28 +99,23 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "pnpm"
+          cache: "npm"
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: Generate Prisma client
-        run: pnpm db:generate
+        run: npm run db:generate
 
       - name: Run database migrations
-        run: pnpm db:push
+        run: npm run db:push
 
       - name: Run tests
-        run: pnpm test:run
+        run: npm run test:run
 
   build:
     name: Build
@@ -141,25 +125,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "pnpm"
+          cache: "npm"
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: Generate Prisma client
-        run: pnpm db:generate
+        run: npm run db:generate
 
       - name: Build application
-        run: pnpm build
+        run: npm run build
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -186,7 +165,3 @@ jobs:
       - name: Deploy to production
         run: |
           echo "Deployment step - add your deployment target here"
-          # Example: Deploy to Vercel
-          # npx vercel --prod --token=${{ secrets.VERCEL_TOKEN }}
-          # Example: Deploy to Docker
-          # docker compose -f docker/docker-compose.yml up -d --build
