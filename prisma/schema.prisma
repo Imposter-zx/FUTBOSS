@@ -1,0 +1,580 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  GUEST
+  USER
+  ADMIN
+}
+
+enum Position {
+  GK
+  CB
+  LB
+  RB
+  LWB
+  RWB
+  CDM
+  CM
+  CAM
+  LM
+  RM
+  LW
+  RW
+  CF
+  ST
+}
+
+enum MatchStatus {
+  SCHEDULED
+  LIVE
+  HALF_TIME
+  EXTRA_TIME
+  PENALTIES
+  FINISHED
+  POSTPONED
+  CANCELLED
+  ABANDONED
+  INTERRUPTED
+}
+
+enum EventType {
+  GOAL
+  ASSIST
+  YELLOW_CARD
+  RED_CARD
+  SUBSTITUTION
+  PENALTY
+  VAR
+  OWN_GOAL
+  MISSED_PENALTY
+  SAVE
+  HIT_POST
+  INJURY_TIME
+}
+
+enum Platform {
+  WEB
+  IOS
+  ANDROID
+}
+
+enum Theme {
+  DARK
+  LIGHT
+  SYSTEM
+}
+
+enum Language {
+  EN
+  ES
+  AR
+  FR
+  DE
+  IT
+  PT
+  RU
+  ZH
+  JA
+}
+
+enum StatCategory {
+  POSSESSION
+  SHOTS
+  SHOTS_ON_TARGET
+  CORNERS
+  FOULS
+  YELLOW_CARDS
+  RED_CARDS
+  OFFSIDES
+  THROW_INS
+  GOAL_KICKS
+  FREE_KICKS
+  SAVES
+  PASSES
+  PASS_ACCURACY
+  TACKLES
+  INTERCEPTIONS
+  CLEARANCES
+  BLOCKS
+  CROSSES
+  DRIBBLES
+  AERIAL_DUELS
+}
+
+enum NotificationType {
+  GOAL_SCORED
+  MATCH_STARTED
+  HALF_TIME
+  FULL_TIME
+  RED_CARD
+  PENALTY_AWARDED
+  VAR_DECISION
+  MATCH_REMINDER
+  SUBSTITUTION
+  YELLOW_CARD
+}
+
+enum SubscriptionType {
+  MATCH
+  COMPETITION
+  TEAM
+  PLAYER
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  password      String?
+  image         String?
+  role          Role      @default(USER)
+  isActive      Boolean   @default(true)
+  emailVerified DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+  preferences   UserPreference?
+  subscriptions UserSubscription[]
+  notifications Notification[]
+  favorites     Favorite[]
+
+  @@index([email])
+  @@index([role])
+  @@index([createdAt])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@id([identifier, token])
+}
+
+model Competition {
+  id            String   @id @default(cuid())
+  name          String
+  slug          String   @unique
+  shortName     String?
+  logo          String?
+  banner        String?
+  country       String?
+  season        String?
+  sportType     String   @default("FOOTBALL")
+  isActive      Boolean  @default(true)
+  status        String   @default("IN_PROGRESS")
+  tier          Int      @default(1)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  teams         CompetitionTeam[]
+  matches       Match[]
+  standings     Standing[]
+  seasons       Season[]
+  subscriptions UserSubscription[]
+
+  @@index([slug])
+  @@index([isActive])
+  @@index([tier])
+  @@index([sportType])
+}
+
+model Team {
+  id             String   @id @default(cuid())
+  name           String
+  slug           String   @unique
+  shortName      String?
+  logo           String?
+  banner         String?
+  country        String?
+  city           String?
+  venue          String?
+  foundedYear    Int?
+  primaryColor   String?
+  secondaryColor String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  competitions     CompetitionTeam[]
+  players          Player[]
+  homeMatches      Match[]           @relation("HomeTeam")
+  awayMatches      Match[]           @relation("AwayTeam")
+  standings        Standing[]
+  subscriptions    UserSubscription[]
+  homeHeadToHeads  HeadToHead[]      @relation("HeadToHeadHome")
+  awayHeadToHeads  HeadToHead[]      @relation("HeadToHeadAway")
+  matchEvents      MatchEvent[]
+  matchStatistics  MatchStatistic[]
+  matchPlayerStats MatchPlayerStat[]
+
+  @@index([slug])
+  @@index([country])
+}
+
+model CompetitionTeam {
+  competitionId String
+  competition   Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  teamId        String
+  team          Team        @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@id([competitionId, teamId])
+  @@index([competitionId])
+  @@index([teamId])
+}
+
+model Player {
+  id            String   @id @default(cuid())
+  name          String
+  firstName     String?
+  lastName      String?
+  slug          String   @unique
+  photo         String?
+  age           Int?
+  nationality   String?
+  position      Position
+  shirtNumber   Int?
+  height        Float?
+  weight        Float?
+  preferredFoot String?
+  marketValue   Float?
+  contractUntil String?
+  goals         Int      @default(0)
+  assists       Int      @default(0)
+  appearances   Int      @default(0)
+  rating        Float    @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  teamId String
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  subscriptions    UserSubscription[]
+  matchPlayerStats MatchPlayerStat[]
+  matchEvents      MatchEvent[] @relation("MatchEventPlayer")
+  assistedEvents   MatchEvent[] @relation("MatchEventAssist")
+
+  @@index([slug])
+  @@index([teamId])
+  @@index([position])
+  @@index([nationality])
+  @@index([goals])
+}
+
+model Match {
+  id         String      @id @default(cuid())
+  homeScore  Int?
+  awayScore  Int?
+  status     MatchStatus @default(SCHEDULED)
+  minute     Int         @default(0)
+  round      String?
+  date       DateTime
+  venue      String?
+  referee    String?
+  attendance Int?
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  competitionId String
+  competition   Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  homeTeamId    String
+  homeTeam      Team        @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  awayTeamId    String
+  awayTeam      Team        @relation("AwayTeam", fields: [awayTeamId], references: [id])
+
+  events        MatchEvent[]
+  statistics    MatchStatistic[]
+  commentaries  Commentary[]
+  playerStats   MatchPlayerStat[]
+  standings     Standing[]
+  headToHeads   HeadToHeadMatch[]
+  subscriptions UserSubscription[]
+
+  @@index([status])
+  @@index([date])
+  @@index([competitionId])
+  @@index([homeTeamId])
+  @@index([awayTeamId])
+  @@index([competitionId, status])
+  @@index([date, status])
+}
+
+model MatchEvent {
+  id          String    @id @default(cuid())
+  minute      Int
+  addedTime   Int?
+  description String?
+  xg          Float?
+
+  matchId        String
+  match          Match   @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  teamId         String
+  team           Team    @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  playerId       String
+  player         Player  @relation("MatchEventPlayer", fields: [playerId], references: [id], onDelete: Cascade)
+  assistPlayerId String?
+  assistPlayer   Player? @relation("MatchEventAssist", fields: [assistPlayerId], references: [id])
+  type           EventType
+
+  @@index([matchId])
+  @@index([playerId])
+  @@index([teamId])
+  @@index([type])
+  @@index([matchId, type])
+}
+
+model Standing {
+  id             String @id @default(cuid())
+  position       Int
+  playedGames    Int    @default(0)
+  won            Int    @default(0)
+  drawn          Int    @default(0)
+  lost           Int    @default(0)
+  goalsFor       Int    @default(0)
+  goalsAgainst   Int    @default(0)
+  goalDifference Int    @default(0)
+  points         Int    @default(0)
+  form           Json?
+
+  competitionId String
+  competition   Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  teamId        String
+  team          Team        @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  matchId       String?
+  match         Match?      @relation(fields: [matchId], references: [id])
+
+  @@index([competitionId])
+  @@index([teamId])
+  @@index([competitionId, position])
+  @@index([matchId])
+}
+
+model MatchStatistic {
+  id        String      @id @default(cuid())
+  homeValue Float
+  awayValue Float
+  category  StatCategory
+
+  matchId String
+  match   Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  teamId  String?
+  team    Team?  @relation(fields: [teamId], references: [id])
+
+  @@index([matchId])
+  @@index([teamId])
+  @@index([category])
+}
+
+model MatchPlayerStat {
+  id              String   @id @default(cuid())
+  rating          Float?
+  minutesPlayed   Int?
+  goals           Int      @default(0)
+  assists         Int      @default(0)
+  shots           Int      @default(0)
+  shotsOnTarget   Int      @default(0)
+  passes          Int      @default(0)
+  passAccuracy    Float?
+  tackles         Int      @default(0)
+  interceptions   Int      @default(0)
+  clearances      Int      @default(0)
+  blocks          Int      @default(0)
+  fouls           Int      @default(0)
+  yellowCards     Int      @default(0)
+  redCards        Int      @default(0)
+  offsides        Int      @default(0)
+  dribbles        Int      @default(0)
+  dispossessed    Int      @default(0)
+  aerialDuelsWon  Int      @default(0)
+  aerialDuelsLost Int      @default(0)
+  keyPasses       Int      @default(0)
+  xG              Float?
+  xA              Float?
+  touches         Int      @default(0)
+  position        Position?
+
+  matchId  String
+  match    Match  @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  playerId String
+  player   Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  teamId   String
+  team     Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@index([matchId])
+  @@index([playerId])
+  @@index([teamId])
+}
+
+model Commentary {
+  id          String  @id @default(cuid())
+  minute      Int
+  text        String
+  isImportant Boolean @default(false)
+  type        String?
+
+  matchId String
+  match   Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
+  @@index([matchId])
+  @@index([matchId, minute])
+}
+
+model HeadToHead {
+  id           String @id @default(cuid())
+  totalMatches Int    @default(0)
+  homeWins     Int    @default(0)
+  awayWins     Int    @default(0)
+  draws        Int    @default(0)
+  homeGoals    Int    @default(0)
+  awayGoals    Int    @default(0)
+
+  homeTeamId String
+  homeTeam   Team @relation("HeadToHeadHome", fields: [homeTeamId], references: [id])
+  awayTeamId String
+  awayTeam   Team @relation("HeadToHeadAway", fields: [awayTeamId], references: [id])
+
+  lastMatches HeadToHeadMatch[]
+
+  @@unique([homeTeamId, awayTeamId])
+  @@index([homeTeamId])
+  @@index([awayTeamId])
+}
+
+model HeadToHeadMatch {
+  headToHeadId String
+  headToHead   HeadToHead @relation(fields: [headToHeadId], references: [id], onDelete: Cascade)
+  matchId      String
+  match        Match      @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
+  @@id([headToHeadId, matchId])
+  @@index([headToHeadId])
+  @@index([matchId])
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  title     String
+  message   String
+  data      Json?
+  read      Boolean          @default(false)
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+  type      NotificationType
+
+  userId String
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type])
+  @@index([read])
+  @@index([createdAt])
+  @@index([userId, read])
+}
+
+model UserPreference {
+  id                   String   @id @default(cuid())
+  theme                Theme    @default(SYSTEM)
+  language             Language @default(EN)
+  notificationsEnabled Boolean  @default(true)
+  pushEnabled          Boolean  @default(true)
+  emailEnabled         Boolean  @default(true)
+  favoriteTeams        Json?
+  favoriteCompetitions Json?
+  favoritePlayers      Json?
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model UserSubscription {
+  id   String           @id @default(cuid())
+  type SubscriptionType
+
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  matchId       String?
+  match         Match?        @relation(fields: [matchId], references: [id])
+  competitionId String?
+  competition   Competition?  @relation(fields: [competitionId], references: [id])
+  teamId        String?
+  team          Team?         @relation(fields: [teamId], references: [id])
+  playerId      String?
+  player        Player?       @relation(fields: [playerId], references: [id])
+
+  @@index([userId])
+  @@index([type])
+  @@index([matchId])
+  @@index([competitionId])
+  @@index([teamId])
+  @@index([playerId])
+}
+
+model Favorite {
+  id         String   @id @default(cuid())
+  entityType String
+  entityId   String
+  createdAt  DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, entityType, entityId])
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+model Season {
+  id            String   @id @default(cuid())
+  name          String
+  startDate     DateTime
+  endDate       DateTime
+  isCurrent     Boolean  @default(false)
+
+  competitionId String
+  competition   Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+
+  @@index([competitionId])
+  @@index([isCurrent])
+}

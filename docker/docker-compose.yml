@@ -1,0 +1,75 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: futboss-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: futboss
+      POSTGRES_PASSWORD: futboss123
+      POSTGRES_DB: futboss
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U futboss"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - futboss-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: futboss-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass ""
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - futboss-network
+
+  nextjs:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: runner
+    container_name: futboss-nextjs
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://futboss:futboss123@postgres:5432/futboss?schema=public
+      REDIS_URL: redis://redis:6379
+      NEXTAUTH_SECRET: super-secret-key-change-in-production-min-32-chars-long
+      NEXTAUTH_URL: http://localhost:3000
+      JWT_SECRET: jwt-secret-change-in-production
+      WS_URL: ws://localhost:3001
+      WS_PORT: 3001
+      NODE_ENV: production
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - futboss-network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  futboss-network:
+    driver: bridge
