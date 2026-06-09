@@ -1,6 +1,5 @@
 import { logger } from "@/lib/logger";
-import type { ServiceResult } from "@/types";
-import { successResult, errorResult } from "@/types";
+import { successResult, errorResult, type ServiceResult } from "@/types";
 
 export class ServiceError extends Error {
   constructor(

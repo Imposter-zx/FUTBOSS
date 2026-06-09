@@ -1,9 +1,7 @@
 import prisma from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import { BaseRepository, NotFoundError, RepositoryError } from "./base.repository";
-import type { PaginationParams, PaginatedResult } from "@/types";
-import { buildPaginationQuery, buildPaginatedResult } from "@/types";
-import type { EventType } from "@prisma/client";
+import { buildPaginationQuery, buildPaginatedResult, type PaginationParams, type PaginatedResult } from "@/types";
 
 type CompetitionCreate = Parameters<typeof prisma.competition.create>[0]["data"];
 type CompetitionUpdate = Parameters<typeof prisma.competition.update>[0]["data"];

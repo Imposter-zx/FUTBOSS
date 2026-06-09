@@ -1,10 +1,7 @@
 import { withAuth } from "next-auth/middleware";
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 
 const RATE_LIMIT_REQUESTS = Number(process.env.RATE_LIMIT_REQUESTS) || 100;
-const RATE_LIMIT_WINDOW_MS =
-  Number(process.env.RATE_LIMIT_WINDOW_MS) || 60000;
 
 const protectedRoutes = ["/dashboard", "/profile", "/settings"];
 const adminRoutes = ["/admin"];

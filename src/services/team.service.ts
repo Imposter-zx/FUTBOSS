@@ -1,8 +1,7 @@
-import { BaseService, NotFoundServiceError } from "./base.service";
+import { BaseService } from "./base.service";
 import teamRepository from "@/repositories/team.repository";
 import cacheService from "./cache.service";
-import type { ServiceResult } from "@/types";
-import { successResult } from "@/types";
+import { successResult, type ServiceResult } from "@/types";
 
 export class TeamService extends BaseService {
   constructor() {

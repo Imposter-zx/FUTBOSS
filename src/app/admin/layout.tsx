@@ -3,8 +3,8 @@
 export const dynamic = "force-dynamic"
 
 import { useEffect, useState } from "react"
-import { useSession } from "next-auth/react"
-import { useRouter } from "next/navigation"
+import { useSession, signOut } from "next-auth/react"
+import { useRouter, usePathname } from "next/navigation"
 import { AdminSidebar } from "@/components/admin/admin-sidebar"
 import {
   Bell,
@@ -13,7 +13,6 @@ import {
   Home,
   Loader2,
   ShieldAlert,
-  User,
   LogOut,
   Settings,
 } from "lucide-react"
@@ -29,9 +28,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
-import { signOut } from "next-auth/react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
 
 const breadcrumbMap: Record<string, string> = {
   "/admin": "Dashboard",
@@ -53,7 +50,7 @@ export default function AdminLayout({
   const { data: session, status } = useSession()
   const router = useRouter()
   const pathname = usePathname()
-  const [notificationCount, setNotificationCount] = useState(3)
+  const [notificationCount] = useState(3)
 
   useEffect(() => {
     if (status === "unauthenticated") {

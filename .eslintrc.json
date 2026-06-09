@@ -13,6 +13,19 @@
       "jsx": true
     }
   },
+  "env": {
+    "browser": true,
+    "node": true,
+    "es2022": true
+  },
+  "globals": {
+    "React": "readonly",
+    "globalThis": "readonly",
+    "RequestCache": "readonly",
+    "RequestInit": "readonly",
+    "Request": "readonly",
+    "Response": "readonly"
+  },
   "settings": {
     "react": {
       "version": "detect"
@@ -41,9 +54,12 @@
     "prefer-const": "error",
     "no-var": "error",
     "eqeqeq": ["error", "always"],
-    "curly": ["error", "all"],
+    "curly": ["error", "multi-line"],
+    "no-empty": ["error", { "allowEmptyCatch": true }],
     "no-throw-literal": "error",
     "no-unused-expressions": "error",
-    "no-duplicate-imports": "error"
+    "no-duplicate-imports": "error",
+    "import/no-anonymous-default-export": "off",
+    "react/no-unknown-property": ["error", { "ignore": ["cmdk-input-wrapper", "cmdk-group-heading"] }]
   }
 }

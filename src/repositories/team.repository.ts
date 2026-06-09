@@ -188,13 +188,16 @@ export class TeamRepository extends BaseRepository<
 
         if ((teamScore ?? 0) > (opponentScore ?? 0)) {
           wins++;
-          isHome ? homeWins++ : awayWins++;
+          if (isHome) homeWins++;
+          else awayWins++;
         } else if (teamScore === opponentScore) {
           draws++;
-          isHome ? homeDraws++ : awayDraws++;
+          if (isHome) homeDraws++;
+          else awayDraws++;
         } else {
           losses++;
-          isHome ? homeLosses++ : awayLosses++;
+          if (isHome) homeLosses++;
+          else awayLosses++;
         }
       }
 
@@ -300,7 +303,7 @@ export class TeamRepository extends BaseRepository<
         },
       });
 
-      if (!standing) return null;
+      if (!standing) { return null; }
 
       const totalTeams = await prisma.standing.count({
         where: { competitionId: standing.competitionId },

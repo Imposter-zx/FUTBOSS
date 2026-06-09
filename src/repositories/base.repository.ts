@@ -1,8 +1,7 @@
 import type { PrismaClient } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
-import type { PaginationParams, PaginatedResult } from "@/types";
-import { buildPaginationQuery, buildPaginatedResult } from "@/types";
+import { buildPaginationQuery, buildPaginatedResult, type PaginationParams, type PaginatedResult } from "@/types";
 
 export type PrismaDelegate = {
   findMany: (args: unknown) => Promise<unknown[]>;

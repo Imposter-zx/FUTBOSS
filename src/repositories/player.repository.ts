@@ -1,8 +1,7 @@
 import prisma from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import { BaseRepository, NotFoundError, RepositoryError } from "./base.repository";
-import type { PaginationParams, PaginatedResult } from "@/types";
-import { buildPaginationQuery, buildPaginatedResult } from "@/types";
+import { buildPaginationQuery, buildPaginatedResult, type PaginationParams, type PaginatedResult } from "@/types";
 
 type PlayerCreate = Parameters<typeof prisma.player.create>[0]["data"];
 type PlayerUpdate = Parameters<typeof prisma.player.update>[0]["data"];

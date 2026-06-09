@@ -211,7 +211,6 @@ function handleConnection(ws: WebSocket, req: IncomingMessage): void {
 }
 
 function heartbeatCheck(): void {
-  const now = Date.now();
   clients.forEach((client, id) => {
     if (client.ws.readyState === WebSocket.OPEN) {
       sendToClient(client, { type: "PING", payload: {} });

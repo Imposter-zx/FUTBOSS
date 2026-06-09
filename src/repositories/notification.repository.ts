@@ -1,8 +1,7 @@
 import prisma from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import { NotFoundError, RepositoryError } from "./base.repository";
-import type { PaginationParams, PaginatedResult } from "@/types";
-import { buildPaginationQuery, buildPaginatedResult } from "@/types";
+import { buildPaginationQuery, buildPaginatedResult, type PaginationParams, type PaginatedResult } from "@/types";
 import type { NotificationType } from "@prisma/client";
 
 type NotificationEntity = Awaited<ReturnType<typeof prisma.notification.findUnique<{ where: { id: string } }>>>;

@@ -1,8 +1,7 @@
 import prisma from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import { BaseRepository, NotFoundError, RepositoryError } from "./base.repository";
-import type { PaginationParams, PaginatedResult } from "@/types";
-import { buildPaginationQuery, buildPaginatedResult } from "@/types";
+import { buildPaginationQuery, buildPaginatedResult, type PaginationParams, type PaginatedResult } from "@/types";
 import type { Match } from "@prisma/client";
 
 type MatchCreate = Parameters<typeof prisma.match.create>[0]["data"];
