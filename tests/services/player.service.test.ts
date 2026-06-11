@@ -34,7 +34,7 @@ describe("PlayerService", () => {
 
   describe("findBySlug", () => {
     it("returns player data for a valid slug", async () => {
-      vi.mocked(playerRepository.findBySlug).mockResolvedValue(mockPlayer);
+      vi.mocked(playerRepository.findBySlug).mockResolvedValue(mockPlayer as never);
 
       const result = await service.findBySlug("lionel-messi");
 
@@ -57,26 +57,27 @@ describe("PlayerService", () => {
 
   describe("search", () => {
     it("returns paginated results", async () => {
-      const paginatedResult = {
-        data: [mockPlayer],
-        total: 1,
-        page: 1,
-        pageSize: 20,
-        totalPages: 1,
+      const mockPaginatedResult = {
+        items: [mockPlayer],
+        pagination: { page: 1, pageSize: 20, totalItems: 1, totalPages: 1, hasNext: false, hasPrevious: false },
       };
-      vi.mocked(playerRepository.search).mockResolvedValue(paginatedResult);
+      vi.mocked(playerRepository.search).mockResolvedValue(mockPaginatedResult as never);
 
       const result = await service.search("messi", { page: 1, pageSize: 20 });
 
       expect(result.success).toBe(true);
       if (result.success) {
-        expect(result.data).toEqual(paginatedResult);
+        expect(result.data).toEqual(mockPaginatedResult);
       }
       expect(playerRepository.search).toHaveBeenCalledWith("messi", { page: 1, pageSize: 20 }, undefined);
     });
 
     it("passes filters to repository", async () => {
-      vi.mocked(playerRepository.search).mockResolvedValue({ data: [], total: 0, page: 1, pageSize: 20, totalPages: 0 });
+      const emptyResult = {
+        items: [],
+        pagination: { page: 1, pageSize: 20, totalItems: 0, totalPages: 0, hasNext: false, hasPrevious: false },
+      };
+      vi.mocked(playerRepository.search).mockResolvedValue(emptyResult as never);
 
       const filters = { position: "FW", nationality: "Argentina" };
       await service.search("messi", { page: 1, pageSize: 20 }, filters);
@@ -99,7 +100,7 @@ describe("PlayerService", () => {
         motmAwards: 2,
         averageRating: 8.2,
       };
-      vi.mocked(playerRepository.getPerformanceMetrics).mockResolvedValue(metrics);
+      vi.mocked(playerRepository.getPerformanceMetrics).mockResolvedValue(metrics as never);
 
       const result = await service.getPerformanceMetrics("player-1");
 
@@ -113,7 +114,7 @@ describe("PlayerService", () => {
   describe("getMatchHistory", () => {
     it("returns match history", async () => {
       const matches = [{ id: "match-1", date: new Date().toISOString() }];
-      vi.mocked(playerRepository.getMatchHistory).mockResolvedValue(matches);
+      vi.mocked(playerRepository.getMatchHistory).mockResolvedValue(matches as never);
 
       const result = await service.getMatchHistory("player-1", 5);
 
@@ -128,7 +129,7 @@ describe("PlayerService", () => {
   describe("getPlayerRatings", () => {
     it("returns ratings data", async () => {
       const ratings = { average: 7.5, recent: [7.5, 8.0, 6.5], trend: "up" as const };
-      vi.mocked(playerRepository.getPlayerRatings).mockResolvedValue(ratings);
+      vi.mocked(playerRepository.getPlayerRatings).mockResolvedValue(ratings as never);
 
       const result = await service.getPlayerRatings("player-1");
 
